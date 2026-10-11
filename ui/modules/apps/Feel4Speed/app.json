@@ -1,0 +1,15 @@
+{
+  "name": "Feel4Speed",
+  "author": "Feel4Speed",
+  "version": "1.0.0",
+  "description": "Compact speed-sensitive FOV, acceleration feedback, sideways G-force camera roll, engine wobble and edge effects. Expand the transparent titlebar to adjust Camera, Active, Cornering and Effects.",
+  "directive": "feel4Speed",
+  "domElement": "<feel4-speed></feel4-speed>",
+  "css": {
+    "width": "320px",
+    "height": "350px",
+    "top": "100px",
+    "left": "40px"
+  },
+  "preserveAspectRatio": false
+}

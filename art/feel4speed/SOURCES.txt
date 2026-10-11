@@ -1,0 +1,111 @@
+Feel4Speed API research, checked 2026-10-10
+
+Primary BeamNG documentation:
+https://documentation.beamng.com/modding/programming/extensions/
+  Extension load/unload, hook model, game source as detailed API documentation.
+https://documentation.beamng.com/modding/programming/virtualmachines/
+  bngApi.engineLua and guihooks.trigger UI/Game Engine Lua bridge.
+https://documentation.beamng.com/modding/ui/app_creation/
+  AngularJS UI app directive, app.json, selector icon and discovery.
+https://documentation.beamng.com/modding/input/actions/
+  Additive action definitions and Game Engine Lua context.
+https://documentation.beamng.com/modding/postfx/
+  ShaderData/GFXStateBlockData/PostEffect, constants, timing and constraints.
+https://documentation.beamng.com/modding/mod-support/mod_packing/
+  ZIP top-level directories, no wrapper folder.
+https://documentation.beamng.com/tutorials/mods/installing-mods/
+  Place the intact ZIP in the active user folder's mods directory.
+
+Original developer-authored examples:
+https://www.beamng.com/threads/custom-camera-modes-possible-with-0-5-5.24111/
+https://www.beamng.com/threads/head-tracking-software-api-access.84739/
+  Camera discovery/output and runningOrder injection into the camera pipeline.
+
+Engine-authored source inspected in a third-party retained v0.36 snapshot:
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/tree/main/.beamng/orig-0.36/lua/ge
+  camera.lua, cameraModes/gameengine.lua, cameraModes/orbit.lua, main.lua
+  and modmanager.lua. These internals are version-specific. This is original
+  engine source evidence, not a claim of current installed-game verification.
+  None of these engine files are shipped with Feel4Speed.
+
+Original mod-author source used to verify modern shared shader conventions:
+https://github.com/ToniMacaroni/GfxSuite/tree/main/shaders/common/postFx
+  Header stages, shared PostFX uniforms and processPostFxVert convention.
+  Feel4Speed's vignette/radial blur implementation is original.
+
+Active feedback / RPM / distance references for 0.2.0:
+https://documentation.beamng.com/modding/vehicle/vehicle_system/electrics/
+  airspeed is actual world-relative speed in m/s; airflowspeed includes wind.
+  Feel4Speed uses the camera pipeline's world velocity magnitude for movement
+  speed, rather than wheel speed or a wind-dependent signal.
+https://documentation.beamng.com/modding/programming/virtualmachines/#communication
+  Vehicle queueLuaCommand and obj:queueGameEngineLua cross-VM communication.
+https://www.beamng.com/threads/solved-getting-engine-rpm-in-gelua.97639/
+  BeamNG team reply confirms engine RPM is electrics.values.rpm in Vehicle Lua.
+  Feel4Speed implements its own bounded, token-checked numeric queue requests;
+  it does not install a persistent vehicle publisher or require UI streams.
+https://beamng.com/game/oldblog/get-busy/
+  Official castRayStatic(origin, direction, distance) example and purpose.
+https://www.beamng.com/threads/i-think-that-a-anti-collision-warning-systems-for-newer-cars-should-be-in-beam-ng-drive.75375/
+  BeamNG team reply explains that a no-hit static ray returns the query length.
+
+Additional engine-authored files inspected in the retained v0.36 snapshot:
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/ge/extensions/core/camera.lua
+  World position-derived data.vel, dtSim and teleport handling.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/ge/extensions/core/cameraModes/orbit.lua
+  Fresh world res.pos and res.targetPos after native collision handling.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/ge/extensions/core/cameraModes/collision.lua
+  Native collision behavior and shared state; not instantiated or copied.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/common/mathlib.lua
+  vec3 construction and XYZ vector representation.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/vehicle/electrics.lua
+  Movement speed versus wheel speed and engine RPM versus rpmTacho.
+
+The dynamics, clearance probe implementation and RPM sampler are original.
+No retained engine files or reference mod source are included in the ZIP.
+
+Drift-aware active blend references for 0.2.1:
+https://www.beamng.com/game/news/patch/get-busy/
+  Official release adds getDirectionVector/getDirectionVectorUp to GE Lua.
+https://www.beamng.com/threads/how-to-use-an-objects-coordinate-system-as-a-reference-rather-than-global-coordinates.89877/
+  BeamNG Team reply confirms vehicle direction vectors and their world use.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/ge/map.lua
+  Engine-authored GE code reads vehicle direction alongside world velocity.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/ge/extensions/gameplay/drift/drift.lua
+  Native drift-angle calculation compares normalized heading and velocity yaw.
+  This is version-specific API evidence; Feel4Speed's detector/blend is original
+  and does not depend on a drift mission or copy the engine drift implementation.
+
+Lateral-G roll references for 0.2.2:
+https://documentation.beamng.com/modding/vehicle/coordinate_systems/
+  Vehicle +X is left, -Y is forward, +Z is up. Normalized world forward XY
+  therefore yields left=(-forwardY,forwardX) for projected cornering acceleration.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/common/mathlib.lua
+  Quaternion products, inverse quaternion/vector action, radian Euler inputs
+  and toDirUp (local Y forward, local Z up). Camera-local right roll requires
+  negative native Euler-Y premultiplied with the current camera quaternion.
+  This was numerically verified using the retained implementation, including
+  nonidentity camera orientations; no engine file is shipped with the mod.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/ge/extensions/core/cameraModes/driver.lua
+  Native inertial camera motion also derives from GE world data.vel.
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/vehicle/sensors.lua
+https://github.com/KRtkovo-eu-AI/BeamNG-ADAS-plus/blob/main/.beamng/orig-0.36/lua/vehicle/hydros.lua
+  Sensors gx/gx2 and lateral-acceleration use inspected for coordinate context.
+  Feel4Speed computes horizontal motion-based lateral G directly in GE and
+  adds no Vehicle Lua polling, sensor publisher or network dependency for roll.
+
+The original roll-geometry test fixture covers opposite sign/composition
+negative controls and preservation of the view axis across rotated cameras.
+
+First public release licensing/dependency review for 1.0.0:
+https://opensource.org/license/mit
+  MIT permissions and preservation of copyright/permission notices.
+https://documentation.beamng.com/modding/programming/legal/
+  Choose a license for original work; comply with copied/derived material's
+  licenses. Some official engine source is bCDDL; no engine files are bundled.
+https://www.beamng.com/game/support/policies/eula/
+  Section 11: user-generated content rights and terms of BeamNG service uploads.
+https://www.beamng.com/game/support/policies/modding-guidelines/
+  Stable repository ZIP name, no unused/readme files or stock-data overwrites.
+  The runtime build is lean; the separate source build contains documentation
+  and reproducible tests. No repository submission has been made.

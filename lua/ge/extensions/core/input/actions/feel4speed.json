@@ -1,0 +1,10 @@
+{
+  "feel4speed_toggle": {
+    "order": 100,
+    "cat": "camera",
+    "ctx": "tlua",
+    "title": "Feel4Speed: Toggle effects",
+    "desc": "Enable or disable Feel4Speed camera and visual effects.",
+    "onDown": "extensions.load('feel4speed_main'); if feel4speed_main then feel4speed_main.toggle() end"
+  }
+}

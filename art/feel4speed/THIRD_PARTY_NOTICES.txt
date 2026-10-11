@@ -1,0 +1,27 @@
+Feel4Speed 1.0.0 - Dependency and provenance notices
+Reviewed 2026-10-10
+
+LICENSE SCOPE
+
+The MIT license in LICENSE / art/feel4speed/LICENSE.txt applies to the
+Feel4Speed source, documentation and mod assets distributed in this project.
+It does not license BeamNG.drive, its engine source, game assets or any
+separately supplied third-party component. No stock engine source, native
+binaries, third-party library or stock camera replacement is bundled.
+
+RUNTIME
+
+BeamNG.drive supplies the Game Engine/Vehicle Lua runtimes, camera and collision
+APIs, renderer/PostFX objects, UI framework and shader helpers. The UI uses
+the game's AngularJS environment. The custom HLSL shader includes installed
+game headers; those files are resolved by the game and are not distributed
+with Feel4Speed. Their original licenses remain applicable.
+
+DEVELOPMENT ONLY; NOT BUNDLED
+
+Python 3: archive builder and ctypes-based Lua test runner; Python standard
+library only. The runner additionally needs a system Lua 5.4 shared library.
+Node.js: UI tests, JavaScript syntax checks and layout-test harness.
+Playwright and Chrome/Chromium: optional rendered layout checks.
+AngularJS 1.5.8: an external fixture for those rendered checks, not an app copy
+installed by the mod. Obtain tools/fixtures separately under their own licenses.

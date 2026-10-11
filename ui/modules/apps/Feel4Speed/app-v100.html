@@ -1,0 +1,107 @@
+<section class="f4s-app f4s-v100" ng-class="{'f4s-compact': f4s.compact, 'f4s-off': !f4s.settings.enabled}">
+  <link rel="stylesheet" href="/ui/modules/apps/Feel4Speed/app-v100.css">
+  <header class="f4s-header">
+    <button class="f4s-title" type="button" ng-click="f4sToggleCompact()" aria-expanded="{{!f4s.compact}}" title="Feel4Speed UI 1.0.0 | {{f4s.compact ? 'Open controls' : 'Minimize controls'}}">Feel<span>4</span>Speed</button>
+    <span class="f4s-mini-status" ng-class="{'f4s-live': f4s.telemetry.active}" title="{{f4s.status.saveError || f4s.status.message || 'Settings saved automatically'}}">{{!f4s.settings.enabled ? 'OFF' : (f4s.telemetry.active ? 'ON' : 'IDLE')}}</span>
+    <label class="f4s-switch" title="Enable Feel4Speed"><input type="checkbox" ng-model="f4s.settings.enabled" ng-change="f4sEnabled()" aria-label="Enable Feel4Speed"><span></span></label>
+    <button class="f4s-icon-button" type="button" ng-click="f4sToggleCompact()" aria-expanded="{{!f4s.compact}}" aria-label="{{f4s.compact ? 'Expand controls' : 'Minimize controls'}}" title="{{f4s.compact ? 'Expand controls' : 'Minimize controls'}}">{{f4s.compact ? '+' : '&minus;'}}</button>
+  </header>
+
+  <!-- Compact mode has no body or footer, even inside an older larger layout. -->
+  <div class="f4s-panel" ng-if="!f4s.compact">
+    <div class="f4s-presets" aria-label="Speed effect presets">
+      <button type="button" ng-click="f4sPreset('standard')" title="The recommended Feel4Speed settings">Standard</button>
+      <button type="button" ng-click="f4sPreset('intense')" title="A stronger speed sensation">Intense</button>
+      <button type="button" ng-click="f4sPreset('clean')" title="Extra FOV without wobble or post effects">FOV only</button>
+    </div>
+
+    <nav class="f4s-tabs" role="tablist" aria-label="Feel4Speed controls">
+      <button id="f4s-camera-tab" type="button" role="tab" aria-selected="{{f4s.tab === 'camera'}}" aria-controls="f4s-camera-panel" ng-class="{'f4s-selected': f4s.tab === 'camera'}" ng-click="f4sTab('camera')">Camera</button>
+      <button id="f4s-active-tab" type="button" role="tab" aria-selected="{{f4s.tab === 'active'}}" aria-controls="f4s-active-panel" ng-class="{'f4s-selected': f4s.tab === 'active'}" ng-click="f4sTab('active')">Active</button>
+      <button id="f4s-cornering-tab" type="button" role="tab" aria-selected="{{f4s.tab === 'cornering'}}" aria-controls="f4s-cornering-panel" ng-class="{'f4s-selected': f4s.tab === 'cornering'}" ng-click="f4sTab('cornering')">Cornering</button>
+      <button id="f4s-effects-tab" type="button" role="tab" aria-selected="{{f4s.tab === 'effects'}}" aria-controls="f4s-effects-panel" ng-class="{'f4s-selected': f4s.tab === 'effects'}" ng-click="f4sTab('effects')">Effects</button>
+    </nav>
+
+    <div class="f4s-telemetry">
+      <div class="f4s-live-line"><span class="f4s-camera">{{f4s.telemetry.camera || 'No camera'}}</span><span><b>{{f4sNumber(f4s.telemetry.speedKph)}}</b> km/h</span><span>FOV <b>{{f4sNumber(f4s.telemetry.fov, 1)}}&deg;</b></span><span class="f4s-added">+{{f4sNumber(f4s.telemetry.extraFov, 1)}}&deg;</span></div>
+      <div class="f4s-intensity-bar" role="progressbar" aria-label="Speed effect strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{f4sStrength()}}"><span ng-style="{'width': f4sStrength() + '%'}"></span></div>
+    </div>
+
+    <main class="f4s-scroll">
+      <div id="f4s-camera-panel" role="tabpanel" aria-labelledby="f4s-camera-tab" ng-if="f4s.tab === 'camera'">
+        <label class="f4s-slider-label f4s-primary" title="Added on top of your existing camera FOV at full effect">Extra FOV at speed <output>+{{f4sNumber(f4s.settings.extraFov)}}&deg;</output><input type="range" min="0" max="60" step="1" ng-model="f4s.settings.extraFov" ng-change="f4sChange('extraFov')" aria-label="Extra FOV at full speed in degrees"></label>
+        <div class="f4s-grid">
+          <label class="f4s-slider-label">Starts at <output>{{f4sNumber(f4s.settings.startSpeed)}} km/h</output><input type="range" min="0" max="150" step="1" ng-model="f4s.settings.startSpeed" ng-change="f4sChange('startSpeed')" aria-label="Effect start speed in km/h"></label>
+          <label class="f4s-slider-label">Full effect at <output>{{f4sNumber(f4s.settings.fullSpeed)}} km/h</output><input type="range" min="40" max="400" step="1" ng-model="f4s.settings.fullSpeed" ng-change="f4sChange('fullSpeed')" aria-label="Full effect speed in km/h"></label>
+          <label class="f4s-slider-label" title="Less than 1 builds early; greater than 1 builds later">Build-up curve <output>{{f4sNumber(f4s.settings.curve, 2)}}</output><input type="range" min="0.5" max="3" step="0.05" ng-model="f4s.settings.curve" ng-change="f4sChange('curve')" aria-label="Build-up curve"></label>
+          <label class="f4s-slider-label" title="A longer response smooths acceleration and deceleration">Smoothing <output>{{f4sNumber(f4s.settings.response, 2)}} s</output><input type="range" min="0.05" max="2" step="0.05" ng-model="f4s.settings.response" ng-change="f4sChange('response')" aria-label="Effect smoothing in seconds"></label>
+          <label class="f4s-slider-label" title="Caps the added boost. An already wider native camera FOV is never reduced.">Total FOV ceiling <output>{{f4sNumber(f4s.settings.fovLimit)}}&deg;</output><input type="range" min="80" max="140" step="1" ng-model="f4s.settings.fovLimit" ng-change="f4sChange('fovLimit')" aria-label="Total field of view ceiling in degrees"></label>
+          <label class="f4s-slider-label" title="Camera wobble that follows road speed; 0 turns it off">Speed wobble <output>{{f4sNumber(f4s.settings.wobble, 2)}}&deg;</output><input type="range" min="0" max="1" step="0.01" ng-model="f4s.settings.wobble" ng-change="f4sChange('wobble')" aria-label="Speed wobble in degrees"></label>
+        </div>
+        <label class="f4s-check"><input type="checkbox" ng-model="f4s.settings.orbitOnly" ng-change="f4sChange('orbitOnly')"><span>Orbit camera only</span></label>
+        <p class="f4s-hint">Turn off to include chase and driver cameras.</p>
+      </div>
+
+      <div id="f4s-active-panel" role="tabpanel" aria-labelledby="f4s-active-tab" ng-if="f4s.tab === 'active'">
+        <label class="f4s-check" title="Acceleration pulls back and widens the view. Braking moves closer and narrows it. The camera settles back to your speed-based view."><input type="checkbox" ng-model="f4s.settings.activeEnabled" ng-change="f4sChange('activeEnabled')" aria-label="Enable acceleration and braking feedback"><span>Acceleration and braking feedback</span></label>
+        <label class="f4s-check" title="With this off, acceleration and braking cues fade to passive during drifts and blend back afterwards. Speed effects and RPM wobble continue."><input type="checkbox" ng-model="f4s.settings.activeWhileDrifting" ng-change="f4sChange('activeWhileDrifting')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Active feedback while drifting"><span>Active feedback while drifting</span></label>
+        <p class="f4s-hint">With drift feedback off, active cues fade to passive during drifts and blend back afterwards. Speed effects and RPM wobble continue.</p>
+        <p class="f4s-drift-status" ng-if="f4sDriftStatus()" title="{{f4s.status.drift}}">{{f4sDriftStatus()}}</p>
+        <div class="f4s-active-telemetry" aria-label="Active camera feedback">
+          <span>Acceleration <b>{{f4sSigned(f4s.telemetry.acceleration, 1)}} m/s&sup2;</b></span><span>Engine <b>{{f4s.telemetry.rpmAvailable ? f4sNumber(f4s.telemetry.rpm) : '--'}} RPM</b></span>
+          <span>FOV kick <b>{{f4sSigned(f4s.telemetry.kickFov, 1)}}&deg;</b></span><span>Distance kick <b>{{f4sSigned(f4s.telemetry.distanceOffset, 2)}} m</b></span>
+        </div>
+        <div class="f4s-grid">
+          <label class="f4s-slider-label" title="Widens the view while accelerating. The total FOV ceiling still applies.">Acceleration FOV <output>{{f4sNumber(f4s.settings.accelerationFov, 1)}}&deg;</output><input type="range" min="0" max="20" step="0.5" ng-model="f4s.settings.accelerationFov" ng-change="f4sChange('accelerationFov')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Acceleration FOV in degrees"></label>
+          <label class="f4s-slider-label" title="Narrows the view while braking; 0 turns this kick off">Braking FOV <output>{{f4sNumber(f4s.settings.brakingFov, 1)}}&deg;</output><input type="range" min="0" max="20" step="0.5" ng-model="f4s.settings.brakingFov" ng-change="f4sChange('brakingFov')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Braking FOV in degrees"></label>
+          <label class="f4s-slider-label" title="Pulls the Orbit or Chase camera farther back under acceleration">Accel. pull-back <output>{{f4sNumber(f4s.settings.accelerationDistance, 2)}} m</output><input type="range" min="0" max="1" step="0.01" ng-model="f4s.settings.accelerationDistance" ng-change="f4sChange('accelerationDistance')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Acceleration pull-back in metres"></label>
+          <label class="f4s-slider-label" title="Moves the Orbit or Chase camera closer under braking">Braking push-in <output>{{f4sNumber(f4s.settings.brakingDistance, 2)}} m</output><input type="range" min="0" max="1" step="0.01" ng-model="f4s.settings.brakingDistance" ng-change="f4sChange('brakingDistance')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Braking push-in in metres"></label>
+          <label class="f4s-slider-label" title="Acceleration or braking strength at which the full kick is requested">Full kick at <output>{{f4sNumber(f4s.settings.accelReference, 1)}} m/s&sup2;</output><input type="range" min="1" max="20" step="0.5" ng-model="f4s.settings.accelReference" ng-change="f4sChange('accelReference')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Full acceleration kick in metres per second squared"></label>
+          <label class="f4s-slider-label" title="Ignores small changes in acceleration and braking">Deadzone <output>{{f4sNumber(f4s.settings.accelDeadzone, 1)}} m/s&sup2;</output><input type="range" min="0" max="3" step="0.1" ng-model="f4s.settings.accelDeadzone" ng-change="f4sChange('accelDeadzone')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Acceleration deadzone in metres per second squared"></label>
+          <label class="f4s-slider-label" title="Camera spring response: shorter is quicker, longer is softer">Spring time <output>{{f4sNumber(f4s.settings.springTime, 2)}} s</output><input type="range" min="0.08" max="1.5" step="0.01" ng-model="f4s.settings.springTime" ng-change="f4sChange('springTime')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Camera spring time in seconds"></label>
+          <label class="f4s-slider-label" title="Lower damping gives more bounce; higher damping settles smoothly">Spring damping <output>{{f4sNumber(f4s.settings.springDamping, 2)}}</output><input type="range" min="0.3" max="2" step="0.05" ng-model="f4s.settings.springDamping" ng-change="f4sChange('springDamping')" ng-disabled="!f4s.settings.activeEnabled" aria-label="Camera spring damping"></label>
+        </div>
+        <p class="f4s-section-label">ENGINE RPM WOBBLE</p>
+        <label class="f4s-slider-label" title="Independent of road speed and acceleration feedback; 0 turns it off">RPM wobble <output>{{f4sNumber(f4s.settings.rpmWobble, 2)}}&deg;</output><input type="range" min="0" max="1" step="0.01" ng-model="f4s.settings.rpmWobble" ng-change="f4sChange('rpmWobble')" aria-label="RPM wobble in degrees"></label>
+        <div class="f4s-grid">
+          <label class="f4s-slider-label">Starts at <output>{{f4sNumber(f4s.settings.rpmStart)}} RPM</output><input type="range" min="0" max="10000" step="100" ng-model="f4s.settings.rpmStart" ng-change="f4sChange('rpmStart')" aria-label="RPM wobble starts at"></label>
+          <label class="f4s-slider-label">Full effect at <output>{{f4sNumber(f4s.settings.rpmFull)}} RPM</output><input type="range" min="1000" max="20000" step="100" ng-model="f4s.settings.rpmFull" ng-change="f4sChange('rpmFull')" aria-label="Full RPM effect at"></label>
+        </div>
+        <p class="f4s-hint">Independent of road speed; 0 turns it off.</p>
+        <p class="f4s-postfx-status" title="{{f4s.status.rpm}}">{{f4sRpmStatus()}}</p>
+      </div>
+
+      <div id="f4s-cornering-panel" role="tabpanel" aria-labelledby="f4s-cornering-tab" ng-if="f4s.tab === 'cornering'">
+        <label class="f4s-check" title="Roll rotates around the camera's viewing direction and follows sideways G-force."><input type="checkbox" ng-model="f4s.settings.corneringEnabled" ng-change="f4sChange('corneringEnabled')" aria-label="G-force camera roll"><span>G-force camera roll</span></label>
+        <label class="f4s-check" title="Standard leans into corners: force left leans left; force right leans right. Turn this off for the previous outward roll. Direction changes blend smoothly."><input type="checkbox" ng-model="f4s.settings.corneringInvert" ng-change="f4sChange('corneringInvert')" ng-disabled="!f4s.settings.corneringEnabled" aria-label="Invert roll direction"><span>Invert roll direction</span></label>
+        <label class="f4s-check" title="With this off, G-force roll fades to neutral during drifts and blends back afterwards. Acceleration feedback, speed effects and RPM wobble remain separate."><input type="checkbox" ng-model="f4s.settings.corneringWhileDrifting" ng-change="f4sChange('corneringWhileDrifting')" ng-disabled="!f4s.settings.corneringEnabled" aria-label="Roll while drifting"><span>Roll while drifting</span></label>
+        <p class="f4s-hint f4s-cornering-hint">{{f4sCorneringHint()}}</p>
+        <div class="f4s-active-telemetry f4s-cornering-telemetry" aria-label="Cornering camera feedback">
+          <span>Lateral force <b>{{f4sSigned(f4s.telemetry.lateralG, 2)}} g</b></span><span>Applied roll <b>{{f4sSigned(f4s.telemetry.corneringRoll, 2)}}&deg;</b></span>
+        </div>
+        <div class="f4s-grid">
+          <label class="f4s-slider-label" title="Camera roll requested for each G of sideways force">Strength <output>{{f4sNumber(f4s.settings.corneringStrength, 1)}}&deg;/g</output><input type="range" min="0" max="6" step="0.1" ng-model="f4s.settings.corneringStrength" ng-change="f4sChange('corneringStrength')" ng-disabled="!f4s.settings.corneringEnabled" aria-label="Roll strength in degrees per G"></label>
+          <label class="f4s-slider-label" title="Maximum roll in either direction">Max roll <output>{{f4sNumber(f4s.settings.corneringLimit, 1)}}&deg;</output><input type="range" min="0" max="15" step="0.5" ng-model="f4s.settings.corneringLimit" ng-change="f4sChange('corneringLimit')" ng-disabled="!f4s.settings.corneringEnabled" aria-label="Maximum cornering roll in degrees"></label>
+          <label class="f4s-slider-label" title="Ignores small sideways forces">Deadzone <output>{{f4sNumber(f4s.settings.corneringDeadzone, 2)}} g</output><input type="range" min="0" max="1" step="0.01" ng-model="f4s.settings.corneringDeadzone" ng-change="f4sChange('corneringDeadzone')" ng-disabled="!f4s.settings.corneringEnabled" aria-label="Cornering G-force deadzone"></label>
+          <label class="f4s-slider-label" title="A longer response makes changes in roll smoother">Smoothing <output>{{f4sNumber(f4s.settings.corneringResponse, 2)}} s</output><input type="range" min="0.05" max="1" step="0.01" ng-model="f4s.settings.corneringResponse" ng-change="f4sChange('corneringResponse')" ng-disabled="!f4s.settings.corneringEnabled" aria-label="Cornering smoothing in seconds"></label>
+        </div>
+        <p class="f4s-cornering-status" ng-if="f4sCorneringStatus()" title="{{f4s.status.cornering}}">{{f4sCorneringStatus()}}</p>
+      </div>
+
+      <div id="f4s-effects-panel" role="tabpanel" aria-labelledby="f4s-effects-tab" ng-if="f4s.tab === 'effects'">
+        <label class="f4s-check"><input type="checkbox" ng-model="f4s.settings.postfxEnabled" ng-change="f4sChange('postfxEnabled')"><span>Enable speed post effects</span></label>
+        <label class="f4s-slider-label">Vignette <output>{{f4sNumber(f4s.settings.vignette * 100)}}%</output><input type="range" min="0" max="0.8" step="0.01" ng-model="f4s.settings.vignette" ng-change="f4sChange('vignette')" ng-disabled="!f4s.settings.postfxEnabled" aria-label="Vignette intensity"></label>
+        <label class="f4s-slider-label">Edge blur <output>{{f4sNumber(f4s.settings.blur, 3)}}</output><input type="range" min="0" max="0.1" step="0.001" ng-model="f4s.settings.blur" ng-change="f4sChange('blur')" ng-disabled="!f4s.settings.postfxEnabled" aria-label="Edge blur amount"></label>
+        <p class="f4s-hint">Both effects follow the speed response in Camera. The centre of the screen stays clear.</p>
+        <p class="f4s-postfx-status" ng-if="f4s.status.postfx" title="{{f4s.status.postfx}}">{{f4sPostfxStatus()}}</p>
+      </div>
+    </main>
+
+    <footer class="f4s-footer">
+      <p title="{{f4s.status.saveError || f4s.status.message || 'Settings saved automatically'}}">{{f4sStatusSummary()}}</p>
+      <button type="button" ng-if="!f4s.ready" ng-click="f4sConnect()">Reconnect</button>
+      <button class="f4s-reset" type="button" ng-click="f4sReset()" title="Restore the recommended Standard settings">Reset to Standard</button>
+      <span class="f4s-version">v{{f4s.version}}</span>
+    </footer>
+  </div>
+</section>
